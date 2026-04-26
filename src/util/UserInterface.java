@@ -2,99 +2,71 @@ package util;
 
 import java.util.Scanner;
 import java.util.Locale;
-import java.util.InputMismatchException;
 
 public class UserInterface {
-    // Constante para limitar as tentativas após erros de entradas
-    private static final int MAX_ATTEMPTS = 3;
-
-    // Atributos
     private final Scanner scanner;
-    // Taxa Padrão
-    private static final double DEFAULT_INTEREST_RATE = 11.5;
 
-    // Construtor
+    // Taxas de Juros Padrões para cada tipo de imovel
+    public static final double RATE_HOUSE = 9.5;
+    public static final double RATE_APARTMENT = 10.5;
+    public static final double RATE_LAND = 11.0;
+
     public UserInterface() {
         this.scanner = new Scanner(System.in).useLocale(Locale.US);
     }
 
-    // ENTRADAS
-    public int askPropertyType() {
-        int type;
-        do {
-            System.out.println("\nEscolha o tipo de imóvel:");
-            System.out.println("1 - Casa");
-            System.out.println("2 - Apartamento");
-            System.out.println("3 - Terreno");
-            type = (int) readDoubleWithRetry("Opção: ");
-            if (type < 1 || type > 3) System.out.println("Erro: Opção inválida!");
-        } while (type < 1 || type > 3);
-        return type;
+    public int askSimulationProfile() {
+        System.out.println("\n=========================================================");
+        System.out.println("   SISTEMA DE SIMULAÇÃO DE FINANCIAMENTOS");
+        System.out.println("=========================================================");
+        System.out.println("Escolha o tipo de imóvel para simular:");
+        System.out.println("(1) Casa");
+        System.out.println("(2) Apartamento");
+        System.out.println("(3) Terreno");
+        System.out.println("(4) Misto (Vários tipos)");
+        return (int) readDoubleWithRetry("Opção: ");
     }
 
-    // Valor Imóvel
     public double askPropertyValue() {
-        double value;
-        do {
-            value = readDoubleWithRetry("Digite o valor do imóvel (ex: 250000.00): ");
-            if (value <= 0) {
-                System.out.println("Erro: O valor do imóvel deve ser positivo!");
-            }
-        } while (value <= 0);
-        return value;
+        return readDoubleWithRetry("Digite o valor base do imóvel: ");
     }
 
-    // Prazo do financiamento
-    public double askFinancingTerm() {
-        double term;
-        do {
-            term = readDoubleWithRetry("Digite o prazo do financiamento em anos (30 ou 30.5): ");
-            if (term <= 0) {
-                System.out.println("Erro: O prazo deve ser um número positivo!");
-            }
-        } while (term <= 0);
-        return term;
+    public int askTerm() {
+        return (int) readDoubleWithRetry("Prazo em anos: ");
     }
 
-    // Taxa de juros (0 a 100%)
-    public double askInterestRate() {
-        System.out.println("Taxa padrão SBPE: " + DEFAULT_INTEREST_RATE + "%.");
-        double rate = readDoubleWithRetry("Digite a taxa de juros anual (ou 0 para usar o padrão):");
-        if (rate <= 0) {
-            System.out.println("Aplicando taxa padrão de " + DEFAULT_INTEREST_RATE + "%.");
-            return DEFAULT_INTEREST_RATE;
-        }
-
-        if (rate > 100) {
-            System.out.println("ERRO: Taxa acima de 100%! Tente Novamente.");
-            return askInterestRate();
-        }
-        return rate;
+    public double askRate(double defaultRate) {
+        System.out.printf("Taxa anual sugerida é: %.1f%%%n", defaultRate);
+        return readDoubleWithRetry("Digite a taxa anual (%) ou 0 para usar a sugerida: ");
     }
 
-    public boolean askForNewSimulation() {
-        System.out.print("\nDeseja realizar uma nova simulação completa? (S/N): ");
-        String response = scanner.next().trim().toUpperCase();
-        return response.startsWith("S");
+    public String askZone() {
+        System.out.print("O terreno é Rural ou Urbano? (Deixe vazio para aleatório): ");
+        return scanner.nextLine().trim();
+    }
+
+    public boolean askDetailReport() {
+        System.out.print("\nDeseja visualizar o relatório detalhado? (S/N): ");
+        String resp = scanner.nextLine().trim().toUpperCase();
+        return resp.startsWith("S");
+    }
+
+    public boolean askNewSimulation() {
+        System.out.print("\nDeseja realizar uma nova simulação? (S/N): ");
+        String resp = scanner.nextLine().trim().toUpperCase();
+        return resp.startsWith("S");
     }
 
     private double readDoubleWithRetry(String prompt) {
-        int attempts = 0;
-        while (attempts < MAX_ATTEMPTS) {
+        while (true) {
             try {
                 System.out.print(prompt);
-                return scanner.nextDouble();
-            } catch (InputMismatchException e) {
-                attempts++;
-                scanner.nextLine();
-                if (attempts < MAX_ATTEMPTS) {
-                    System.out.println("ERRO: Entrada inválida. Use PONTO (.) para decimais. Tentativas restantes: "+ (MAX_ATTEMPTS - attempts));
-                }
+                String input = scanner.nextLine().trim().replace(",", ".");
+                if (input.isEmpty()) return 0;
+                return Double.parseDouble(input);
+            } catch (NumberFormatException e) {
+                System.out.println("Erro: Entrada inválida. Digite apenas números.");
             }
         }
-        // Encerrar o programa se acabar as tentativas
-        System.err.println("\n [ERRO FATAL] Limite de tentativvas excedido. Reinicie a aplicação.");
-        System.exit(0);
-        return 0;
     }
 }

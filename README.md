@@ -1,53 +1,55 @@
 # Sistema de Simulação de Financiamentos Imobiliários
-Este projeto é uma aplicação Java robusta desenvolvida para a  disciplina de Programação Orientada a Objetos.
-O objetivo é simular múltiplos financiamentos, gerenciando coleções de objetos na memória e aplicando regras
-de negócio realistas do mercado financeiro brasileiro.
 
-### Evolução e Funcionalidades
-O sistema deixou de ser uma simulação única para se tornar um gerenciador de portfólio de financiamentos:
+Este projeto é uma aplicação Java desenvolvida para a disciplina de **Fundamentos da Programação Orientada a Objetos** do curso de **Big Data e Inteligência Analítica** da **PUCPR**.
 
-- **Gestão de Coleções (`ArrayList`):** Implementação de listas dinâmicas para armazenar e iterar sobre múltiplos
-objetos de financiamento.
+O objetivo é simular múltiplos financiamentos, gerenciando coleções de objetos na memória e aplicando regras de negócio realistas do mercado financeiro, utilizando técnicas avançadas de manipulação de dados e estruturação de software.
 
-- **Fluxo de Inserção Inteligente:** Estrutura de repetição que garante o cadastro mínimo de 4 financiamentos
-(conforme requisito acadêmico), permitindo que o usuário adicione novos itens opcionalmente.
+## Funcionalidades e Refinamentos
 
-- **Juros Padrão SBPE:** Regra de negócio que sugere a taxa média de mercado (11.5% a.a.).
-Caso o usuário não informe uma taxa, o sistema assume automaticamente o valor padrão.
+O sistema foi projetado para oferecer uma experiência de simulação completa e dinâmica:
 
-- **Tratamento de Exceções (Resiliência):** Implementação de blocos `try-catch` para capturar erros de entrada
-(como o uso indevido de vírgulas em vez de pontos). O sistema oferece até **3 tentativas** antes de encerrar por segurança.
+- **Seleção de Perfil**: Escolha entre Casa, Apartamento, Terreno ou um **Perfil Misto** (gera uma carteira diversificada automaticamente).
+- **Entrada de Dados Inteligente**: O sistema sugere taxas anuais baseadas no tipo de imóvel (Casa: 9.5%, Apto: 10.5%, Terreno: 11.0%).
+- **Lógica de Localização (Data Analytics)**: Para Terrenos, o sistema permite definir a zona ou gera uma distribuição estatística (3 Urbanos e 2 Rurais) caso o usuário opte pelo preenchimento automático.
+- **Resumo Expandido**: Relatório consolidado exibindo o **Custo Efetivo Total** (Capital + Juros) e detalhes específicos de cada ativo.
+- **Ciclo de Simulação Contínuo**: Implementação de um loop de execução que permite múltiplas rodadas de análise sem reiniciar o programa.
 
-- **Formatação Monetária BRL:** Saída de dados totalmente formatada para o padrão brasileiro (R$ 1.234.567,89)
-utilizando `Locale.of("pt", "BR")`.
+## Fundamentação Acadêmica e Lógica do Projeto
 
-- **Herança:** A classe `Financing` tornou-se uma superclasse abstrata, servindo de base para `House`, `Apartment` e `Land`.
+A arquitetura do projeto demonstra o domínio dos pilares da POO aplicados ao contexto de análise de dados:
 
-- **Especialização de Regras:**
-    - **Casas:** Adição de taxa de seguro obrigatória (R$ 80,00/parcela).
-    - **Apartamentos:** Implementação de juros compostos utilizando `Math.pow` para maior precisão financeira.
-    - **Terrenos:** Acréscimo de 2% sobre o valor da parcela devido ao risco de inadimplência.
+1.  **Abstração e Herança**: A classe `Financing` é abstrata, definindo o contrato base para todos os modelos de negócio. As subclasses (`HouseFinancing`, `ApartmentFinancing`, `LandFinancing`) herdam e especializam esses comportamentos.
+2.  **Encapsulamento**: Proteção da integridade dos dados financeiros através de modificadores de acesso e isolamento da lógica de IO na classe `UserInterface`.
+3.  **Polimorfismo**: Processamento dinâmico de uma `List<Financing>`. O sistema invoca os métodos `calculateMonthlyPayment()` e `getSpecificDetails()` de forma polimórfica, executando a implementação correta para cada tipo de imóvel em tempo de execução.
+4.  **Regras de Negócio Diferenciadas**:
+    *   **Casas**: Taxa de seguro fixa inclusa na parcela.
+    *   **Apartamentos**: Cálculo baseado em juros compostos para refletir financiamentos de longo prazo.
+    *   **Terrenos**: Acréscimo de risco de 2% sobre o valor da parcela.
 
-- **Polimorfismo:** O sistema agora processa uma lista única de financiamentos, chamando dinamicamente o método de cálculo correto para cada tipo de objeto em tempo de execução.
+## Estrutura do Projeto
+- `main`: Orquestração do fluxo e controle de loops.
+- `modelo`: Entidades de negócio e algoritmos de cálculo financeiro.
+- `util`: Utilitários para interação com o usuário e tratamento de erros.
 
-- **Relatórios Analíticos:** Inclusão de balanço geral que separa o Valor do Imóvel, o Custo dos Juros e o Total Financiado.
+## Como Executar e Testar
 
-### Tecnologias e Conceitos Aplicados
-- **Linguagem:** Java (JDK 19+).
-- **Paradigma:** Orientação a Objetos (Associação de classes, Encapsulamento e Interação entre objetos).
-- **Tratamento de Dados:** `java.util.Scanner` com tratamento de `InputMismatchException`.
-- **Internacionalização:** Uso de `java.text.NumberFormat` para localização de moeda.
+### Pré-requisitos
+- **Java JDK 19** ou superior instalado.
+- Uma IDE de sua preferência (IntelliJ IDEA, Eclipse, VS Code) ou terminal.
 
-### Estrutura de Pacotes
-O projeto segue o padrão de separação de responsabilidades:
+### Passo a Passo
+1.  **Clonar/Baixar**: Certifique-se de que os arquivos estão na estrutura de pastas correta (`src/main`, `src/modelo`, `src/util`).
+2.  **Compilar**:
+    ```bash
+    javac src/main/Main.java src/modelo/*.java src/util/*.java -d out
+    ```
+3.  **Executar**:
+    ```bash
+    java -cp out main.Main
+    ```
+4.  **No IntelliJ/Eclipse**: Basta abrir a pasta raiz como um projeto Java e executar o método `main` na classe `Main.java`.
 
-- `main`: Contém a lógica de execução e orquestração do fluxo.
-- `modelo`: _Classe Financing_ com os atributos privados e métodos de cálculo.
-- `util`: _Classe UserInterface_ responsável pela interação limpa e segura com o usuário.
+---
+**Projeto desenvolvido para fins acadêmicos - PUCPR - Big Data e Inteligência Analítica.**
 
-### Como Testar
-1. Certifique-se de ter o JDK instalado.
-2. Compile o projeto e execute a classe `main.Main`.
-3. O sistema solicitará os dados de pelo menos 4 financiamentos.
-4. Ao final, será exibido um relatório detalhado com o valor individual de cada item e o **balanço consolidado**
-(soma total) de todos os imóveis e financiamentos.
+***Desenvolvido por Thiago Ribeiro Rosa (T-Analitycs).***

@@ -1,33 +1,35 @@
 package modelo;
 
-public abstract class Financing {
-    // Atributos Privados
-    protected double propertyValue;
-    protected double financingTerm;
-    protected double interestRate;
+import java.io.Serializable;
 
-    // Construtor
-    public Financing(double propertyValue, double financingTerm, double interestRate) {
+// Utilizar abstract para definir que esta classe não pode ser instanciada diretamente
+public abstract class Financing implements Serializable {
+    protected double propertyValue;
+    protected int financingTermYears;
+    protected double annualInterestRate;
+
+    public Financing(double propertyValue, int financingTermYears, double annualInterestRate) {
         this.propertyValue = propertyValue;
-        this.financingTerm = financingTerm;
-        this.interestRate = interestRate;
+        this.financingTermYears = financingTermYears;
+        this.annualInterestRate = annualInterestRate;
     }
-    // REGRAS DE NEGÓCIO
-    // Métodos de Cálculo
-    public double calculateMonthlyPayment() {
-        return (this.propertyValue / (this.financingTerm * 12)) * (1 + (this.interestRate / 100 / 12));
-    }
+
+    // Cada subclasse implementara sua propria regra de calculo mensal
+    public abstract double calculateMonthlyPayment();
 
     public double calculateTotalPayment() {
-        return this.calculateMonthlyPayment() * this.financingTerm * 12;
+        return this.calculateMonthlyPayment() * this.financingTermYears * 12;
     }
 
-    // Acesso controlado
     public double getPropertyValue() { return propertyValue; }
+    public int getFinancingTermYears() { return financingTermYears; }
+    public double getAnnualInterestRate() { return annualInterestRate; }
 
-    // Exibição
-    public void displayFinancingData() {
-        System.out.printf("Property Value: R$ %.2f | Total: R$ %.2f%n",
-                this.propertyValue, this.calculateTotalPayment());
+    // Metodo para que cada imovel descreva suas particularidades
+    public abstract String getSpecificDetails();
+    public int getTermInMonths() {
+        return this.financingTermYears * 12;
     }
+
+
 }

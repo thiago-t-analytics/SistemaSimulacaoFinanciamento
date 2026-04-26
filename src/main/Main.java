@@ -4,118 +4,135 @@ import modelo.*;
 import util.UserInterface;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.text.NumberFormat;
 import java.util.Locale;
 
 public class Main {
     public static void main(String[] args) {
         UserInterface ui = new UserInterface();
-        boolean running;
+        NumberFormat nf = NumberFormat.getCurrencyInstance(Locale.of("pt", "BR"));
+        Random rand = new Random();
 
-        // Loop principal da aplicação
-        do {
-            List<Financing> financingList = new ArrayList<>();
-            NumberFormat nf = NumberFormat.getCurrencyInstance(Locale.of("pt", "BR"));
+        boolean continueSimulation = true;
 
-            // Entrada de Dados
-            RegisterFinancing(ui, financingList);
+        while (continueSimulation) {
+            List<Financing> list = new ArrayList<>();
 
-            // Variáveis de Acúmulo
-            double totalPropertiesAll = 0;
-            double totalFinancedAll = 0;
-            double sumHouse = 0, sumApt = 0, sumLand = 0;
-            int countHouse = 0, countApt = 0, countLand = 0;
+            // Inputs Iniciais
+            int profile = ui.askSimulationProfile();
+            double baseValue = ui.askPropertyValue();
+            int term = ui.askTerm();
 
-            System.out.println("\n===== DETALHAMENTO DOS ITENS =====");
+            // Determinar a taxa padrão para mostrar no input
+            double defaultRate = switch (profile) {
+                case 1 -> UserInterface.RATE_HOUSE;
+                case 2 -> UserInterface.RATE_APARTMENT;
+                case 3 -> UserInterface.RATE_LAND;
+                // Se Misto utilizar o padrão de 10.0
+                default -> 10.0;
+            };
+            double userRate = ui.askRate(defaultRate);
+            
+            // Perguntar ao usuario da zona apenas se for Terreno (Tipo 3)
+            String zoneChoice = "";
+            if (profile == 3) {
+                zoneChoice = ui.askZone();
+            }
 
-            // Processamento
-            for (Financing f : financingList) {
-                double propVal = f.getPropertyValue();
-                double totalPay = f.calculateTotalPayment();
-                totalPropertiesAll += propVal;
-                totalFinancedAll += totalPay;
-
-            // Identificar por tipo
-                String tipoLabel = "";
-                switch (f) {
-                    case House house -> {
-                        countHouse++;
-                        sumHouse += totalPay;
-                        tipoLabel = "[CASA]";
-                    }
-                    case Apartment apartment -> {
-                        countApt++;
-                        sumApt += totalPay;
-                        tipoLabel = "[APARTAMENTO]";
-                    }
-                    case Land land -> {
-                        countLand++;
-                        sumLand += totalPay;
-                        tipoLabel = "[TERRENO]";
-                    }
-                    default -> {
-                    }
+            // RELATORIOS
+            // Gerar 5 exemplos
+            for (int i = 0; i < 5; i++) {
+                double variation = 0.9 + (rand.nextDouble() * 0.2);
+                double currentVal = baseValue * variation;
+                
+                int currentType = profile;
+                // Logica Mista
+                if (profile == 4) {
+                    if (i < 2) currentType = 1;
+                    else if (i < 4) currentType = 2;
+                    else currentType = 3;
                 }
 
-                System.out.printf("%-15s Imóvel: %s | Total c/ Juros: %s%n",
-                        tipoLabel, nf.format(propVal), nf.format(totalPay));
+                double appliedRate = (userRate > 0) ? userRate : switch (currentType) {
+                    case 1 -> UserInterface.RATE_HOUSE;
+                    case 2 -> UserInterface.RATE_APARTMENT;
+                    default -> UserInterface.RATE_LAND;
+                };
+
+                switch (currentType) {
+                    case 1 -> list.add(new HouseFinancing(currentVal, term, appliedRate, 120 * variation, 250 * variation));
+                    case 2 -> list.add(new ApartmentFinancing(currentVal, term, appliedRate, 1, i + 1, 60 * variation));
+                    case 3 -> {
+                        String finalZone;
+                        if (profile == 3) {
+                            if (zoneChoice.isEmpty()) {
+                                finalZone = (i < 3) ? "Urbano" : "Rural";
+                            } else {
+                                finalZone = zoneChoice;
+                            }
+                        } else {
+                            // Sortear a zona se o usuario escolher misto
+                            finalZone = rand.nextBoolean() ? "Urbano" : "Rural";
+                        }
+                        list.add(new LandFinancing(currentVal, term, appliedRate, finalZone));
+                    }
+                }
             }
 
-            // Exibição dos Relatórios Consolidados
-            displayReports(nf, countHouse, sumHouse, countApt, sumApt, countLand, sumLand, totalPropertiesAll, totalFinancedAll);
+            // Relatorio Resumido
+            printHeader("RESUMO DO INVESTIMENTO");
+            double totalProp = 0, totalFin = 0;
 
-            // Reinicialização
-            running = ui.askForNewSimulation();
+            for (int i = 0; i < list.size(); i++) {
+                Financing f = list.get(i);
+                totalProp += f.getPropertyValue();
+                totalFin += f.calculateTotalPayment();
+                
+                String typeName = f.getClass().getSimpleName().replace("Financiamento", "");
+                // Se for terreno, adicionar a zona no resumo
+                if (f instanceof LandFinancing) {
+                    typeName += " (" + f.getSpecificDetails().replace("TERRENO: Zona ", "") + ")";
+                }
 
-            if (running) {
-                System.out.println("\n\nLimpando dados e reiniciando simulador...");
+                System.out.printf("Item %d: %-20s | V. Imóvel: %12s | V. Total: %s%n",
+                        (i + 1), 
+                        typeName, 
+                        nf.format(f.getPropertyValue()),
+                        nf.format(f.calculateTotalPayment()));
             }
 
-        } while (running);
+            System.out.println("-".repeat(80));
+            System.out.printf("VALOR TOTAL DOS BENS (ORIGINAL): %s%n", nf.format(totalProp));
+            System.out.printf("VALOR TOTAL FINANCIADO (JUROS + CAPITAL): %s%n", nf.format(totalFin));
+            System.out.printf("TOTAL DO JUROS: %s%n", nf.format(totalFin - totalProp));
+            System.out.println("=".repeat(80));
 
-        System.out.println("\nObrigado por utilizar o sistema T-Analytics. Simulação encerrada.");
-    }
+            // Relatorio detalhado
+            if (ui.askDetailReport()) {
+                printHeader("DETALHAMENTO DO FINANCIAMENTO");
+                for (Financing f : list) {
+                    System.out.println(f.getSpecificDetails());
+                    System.out.printf("Prazo: %d meses | Taxa: %.1f%% a.a.%n", f.getTermInMonths(), f.getAnnualInterestRate());
+                    System.out.printf("Parcela Mensal: %s%n", nf.format(f.calculateMonthlyPayment()));
+                    System.out.printf("Custo Total:    %s (Juros: %s)%n", 
+                            nf.format(f.calculateTotalPayment()), 
+                            nf.format(f.calculateTotalPayment() - f.getPropertyValue()));
+                    System.out.println("---------------------------------------------------------");
+                }
+            }
 
-    // Metodo auxiliar para organizar o cadastro
-    private static void RegisterFinancing(UserInterface ui, List<Financing> list) {
-        // Cadastro Manual (1/5)
-        int type = ui.askPropertyType();
-        double v = ui.askPropertyValue();
-        double t = ui.askFinancingTerm();
-        double r = ui.askInterestRate();
-
-        if (type == 1) list.add(new House(v, t, r));
-        else if (type == 2) list.add(new Apartment(v, t, r));
-        else list.add(new Land(v, t, r));
-
-        // Cadastro Automático para completar a regra de negócio
-        while (list.stream().filter(f -> f instanceof House).count() < 2) {
-            list.add(new House(500000, 10, 10));
-        }
-        // Adiciona Apartamentos se faltar
-        while (list.stream().filter(f -> f instanceof Apartment).count() < 2) {
-            list.add(new Apartment(500000, 10, 10));
-        }
-        // Adiciona Terreno se faltar
-        while (list.stream().noneMatch(f -> f instanceof Land)) {
-            list.add(new Land(500000, 10, 10));
+            // Retornar ao Loop par a uma Nova Simulação
+            continueSimulation = ui.askNewSimulation();
+            if (!continueSimulation) {
+                System.out.println("\nObrigado por utilizar o Sistema T-Analytics! Encerrando...");
+            }
         }
     }
 
-    private static void displayReports(NumberFormat nf, int cH, double sH, int cA, double sA, int cL, double sL, double tProp, double tFin) {
-        System.out.println("\n===== RESUMO POR CATEGORIA =====");
-        System.out.printf("Casas (%d): %15s%n", cH, nf.format(sH));
-        System.out.printf("Apartamentos (%d): %15s%n", cA, nf.format(sA));
-        System.out.printf("Terrenos (%d): %15s%n", cL, nf.format(sL));
-
-        double totalOnlyInterest = tFin - tProp;
-
-        System.out.println("\n==================================================");
-        System.out.println("          BALANÇO ANALÍTICO DO PORTFÓLIO          ");
-        System.out.println("==================================================");
-        System.out.printf("VALOR TOTAL DOS IMÓVEIS (SEM JUROS):    %s%n", nf.format(tProp));
-        System.out.printf("VALOR TOTAL DOS JUROS ACUMULADOS:       %s%n", nf.format(totalOnlyInterest));
-        System.out.printf("VALOR TOTAL FINAL (MONTANTE):           %s%n", nf.format(tFin));
-        System.out.println("==================================================");
+    private static void printHeader(String title) {
+        System.out.println("\n" + "=".repeat(80));
+        System.out.println(" ".repeat((80 - title.length()) / 2) + title);
+        System.out.println("=".repeat(80));
     }
 }
