@@ -1,6 +1,10 @@
 package modelo;
 
+import java.io.Serial;
+
 public class LandFinancing extends Financing {
+    @Serial
+    private static final long serialVersionUID = 1L;
     private final String zoneType;
 
     public LandFinancing(double value, int term, double rate, String zoneType) {
@@ -18,5 +22,10 @@ public class LandFinancing extends Financing {
     @Override
     public String getSpecificDetails() {
         return "TERRENO: Zona " + zoneType;
+    }
+
+    @Override
+    public String toString() {
+        return super.toString() + String.format(" | Tipo de Zona: %s", zoneType);
     }
 }

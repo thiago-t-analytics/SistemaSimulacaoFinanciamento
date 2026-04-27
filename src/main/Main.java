@@ -2,6 +2,7 @@ package main;
 
 import modelo.*;
 import util.UserInterface;
+import util.FileUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -69,7 +70,7 @@ public class Main {
                 System.out.printf("TOTAL DO JUROS: %s%n", nf.format(totalFin - totalProp));
                 System.out.println("=".repeat(80));
 
-                // 4. Detalhamento Opcional para o usuario
+                // Detalhamento Opcional para o usuario
                 if (ui.askDetailReport()) {
                     printHeader("DETALHAMENTO DO FINANCIAMENTO");
                     for (Financing f : list) {
@@ -83,20 +84,26 @@ public class Main {
                     }
                 }
 
+                // Persistência
+                FileUtils.salvarComoTexto(list);
+                FileUtils.salvarComoObjeto(list);
+
+                ui.showMessage("Simulação concluída! Dados salvos na pasta 'outputs'.");
+
             } catch (ArithmeticException e) {
                 // Capturar erros matemáticos, como divisão por zero
-                System.err.println("ERRO: Ocorreu um problema matemático no cálculo do financiamento: " + e.getMessage());
+                System.err.println("ERRO: Cálculo impossível: " + e.getMessage());
             } catch (RuntimeException e) {
                 // Capturar erros inesperados que podem ocorrer durante a execução
-                System.err.println("ERRO INESPERADO: Falha no motor de simulação. Detalhes: " + e.getLocalizedMessage());
-                // Imprime o 'stack trace' para depuração
-                e.printStackTrace();
+                System.err.println("ERRO INESPERADO: " + e.getLocalizedMessage());
             }
 
             // Retornar ao ‘Loop’ par a uma Nova Simulação
+            System.out.println("\n---------------------------------------------------------");
             continueSimulation = ui.askNewSimulation();
+            
             if (!continueSimulation) {
-                System.out.println("\nObrigado por utilizar o Sistema T-Analytics! Encerrando...");
+                ui.showMessage("Obrigado por utilizar o Sistema T-Analytics! Encerrando...");
                 ui.closeScanner();
             }
         }
@@ -107,14 +114,8 @@ public class Main {
         for (int i = 0; i < 5; i++) {
             double variation = 0.9 + (rand.nextDouble() * 0.2);
             double currentVal = baseValue * variation;
-            
-            int currentType = profile;
             // Lógica para perfil Misto
-            if (profile == 4) {
-                if (i < 2) currentType = 1;      // 2 Casas
-                else if (i < 4) currentType = 2; // 2 Apartamentos
-                else currentType = 3;            // 1 Terreno
-            }
+            int currentType = (profile == 4) ? (i < 2 ? 1 : i < 4 ? 2 : 3) : profile;
 
             double appliedRate = (userRate > 0) ? userRate : switch (currentType) {
                 case 1 -> UserInterface.RATE_HOUSE;
@@ -124,22 +125,15 @@ public class Main {
 
             switch (currentType) {
                 case 1 -> list.add(new HouseFinancing(currentVal, term, appliedRate, 120 * variation, 250 * variation));
-                case 2 -> list.add(new ApartmentFinancing(currentVal, term, appliedRate, 1, i + 1, 60 * variation));
+                case 2 -> list.add(new ApartmentFinancing(currentVal, term, appliedRate, i + 1, 60 * variation));
                 case 3 -> {
-                    String finalZone;
-                    if (profile == 3) { // Se o perfil escolhido foi Terreno
-                        finalZone = zoneChoice.isEmpty() ? ((i < 3) ? "Urbano" : "Rural") : zoneChoice; // 3 Urbanos, 2 Rurais se vazio
-                    } else { // Se o perfil foi Misto e gerou um Terreno
-                        finalZone = rand.nextBoolean() ? "Urbano" : "Rural"; // Sorteia a zona
-                    }
+                    String finalZone = profile == 3 ? (zoneChoice.isEmpty() ? (i < 3 ? "Urbano" : "Rural") : zoneChoice) : (rand.nextBoolean() ? "Urbano" : "Rural");
                     list.add(new LandFinancing(currentVal, term, appliedRate, finalZone));
                 }
             }
         }
     }
 
-
-    // Imprimir o cabeçalho formatado para os relatórios.
     private static void printHeader(String title) {
         System.out.println("\n" + "=".repeat(80));
         System.out.println(" ".repeat((80 - title.length()) / 2) + title);

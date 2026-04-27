@@ -1,8 +1,15 @@
 package modelo;
 
+import java.io.Serial;
 import java.io.Serializable;
+import java.text.NumberFormat;
+import java.util.Locale;
+
 
 public abstract class Financing implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
+
     protected double propertyValue;
     protected int financingTermYears;
     protected double annualInterestRate;
@@ -30,14 +37,28 @@ public abstract class Financing implements Serializable {
         };
     }
 
+    public abstract String getSpecificDetails();
+
     public double getPropertyValue() { return propertyValue; }
     public int getFinancingTermYears() { return financingTermYears; }
     public double getAnnualInterestRate() { return annualInterestRate; }
+    public int getTermInMonths() { return this.financingTermYears * 12; }
 
-    // Metodo para que cada imovel descreva a suas particularidades
-    public abstract String getSpecificDetails();
+    // Formatar valores para moeda brasileira
+    protected String formatCurrency(double value) {
+        NumberFormat nf = NumberFormat.getCurrencyInstance(Locale.of("pt", "BR"));
+        return nf.format(value).replace("\u00A0", " ");
+    }
 
-    public int getTermInMonths() {
-        return this.financingTermYears * 12;
+    @Override
+    public String toString() {
+        double totalInterest = calculateTotalPayment() - propertyValue;
+        return String.format("Tipo: %-12s | V. Original: %12s | V. Total: %12s | Juros: %12s | Prazo: %2d anos | Taxa: %4.1f%% a.a.", 
+                getFriendlyTypeName(), 
+                formatCurrency(propertyValue), 
+                formatCurrency(calculateTotalPayment()),
+                formatCurrency(totalInterest),
+                financingTermYears, 
+                annualInterestRate);
     }
 }

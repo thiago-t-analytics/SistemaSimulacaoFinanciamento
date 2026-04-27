@@ -2,34 +2,35 @@
 
 Este projeto é uma aplicação Java desenvolvida para a disciplina de **Fundamentos da Programação Orientada a Objetos** do curso de **Big Data e Inteligência Analítica** da **PUCPR**.
 
-O objetivo é simular múltiplos financiamentos, gerenciando coleções de objetos na memória e aplicando regras de negócio realistas do mercado financeiro, utilizando técnicas avançadas de manipulação de dados e estruturação de software.
+O sistema simula um ecossistema financeiro para análise de portfólios imobiliários, aplicando rigorosos conceitos de engenharia de software e persistência de dados.
 
 ## Novas Funcionalidades e Resiliência
 
 O sistema foi aprimorado para garantir robustez técnica e conformidade com regras de negócio:
 
-- **Tratamento de Exceções Hierárquico**: Implementação de `try-catch` robusto com captura de `IllegalArgumentException` para entradas negativas e `NumberFormatException` para formatos inválidos.
-- **Lógica de Compliance (Exceção Verificada)**: Criação da exceção personalizada `AumentoMaiorDoQueJurosException`. Caso o acréscimo de seguro da Casa exceda 50% dos juros, o sistema atua como um "Gerente Virtual" e ajusta o valor automaticamente para garantir a viabilidade do contrato.
-- **Gerenciamento de Recursos**: Uso de métodos de fechamento de recursos (`scanner.close()`) para evitar vazamentos de memória.
-- **Interface Polimórfica**: Centralização das traduções e nomes amigáveis dentro da superclasse `Financing`, eliminando redundâncias no código principal.
-- **Motor Analítico em Lote**: Geração automatizada de portfólios variados com variações de mercado de ±10% nos valores dos imóveis.
+- **Persistência Híbrida de Dados**: 
+  - **Relatório Analítico (.txt)**: Gera um histórico acumulativo e formatado dentro da pasta `/outputs`, com labels gerenciais e formatação de moeda (BRL).
+  - **Serialização de Objetos (.ser)**: Salva o estado real da memória em disco, permitindo a persistência completa do ecossistema de objetos.
+- **Tratamento de Exceções Hierárquico**: Captura de erros de input (`NumberFormatException`) e validações de negócio (`IllegalArgumentException`).
+- **Lógica de Compliance e Resiliência**: Implementação da exceção verificada `LimitedAdditionException` (Checked Exception). O sistema possui um "Gerente Virtual" que ajusta automaticamente acréscimos abusivos em financiamentos de casas.
+- **Interface Híbrida**: Combinação de console para entrada de dados e `JOptionPane` (GUI) para feedbacks e notificações de sistema.
+- **Motor Analítico em Lote**: Simulação automatizada de 5 modelos de financiamento com variações dinâmicas de mercado (±10%).
 
 ## Fundamentação Acadêmica e Lógica do Projeto
 
 A arquitetura do projeto demonstra o domínio dos pilares da POO aplicados ao contexto de análise de dados:
 
-1.  **Abstração e Herança**: Uso de superclasse abstrata `Financing` para padronizar o comportamento de diversos ativos imobiliários.
-2.  **Encapsulamento**: Atributos protegidos e centralização de lógica de tradução (`getFriendlyTypeName`) e validação.
-3.  **Polimorfismo**: Chamada dinâmica de métodos de cálculo e descrição, onde cada objeto responde de acordo com sua especialização em tempo de execução.
-4.  **Tratamento de Erros e Exceções**: Diferenciação entre exceções de runtime (erros de input) e exceções de negócio (violação de regras de financiamento).
+1.  **Abstração**: Uso da classe abstrata `Financing` para definir o contrato financeiro global.
+2.  **Herança**: Especialização das regras de cálculo e atributos para `HouseFinancing`, `ApartmentFinancing` e `LandFinancing`.
+3.  **Encapsulamento**: Proteção de atributos e centralização de métodos utilitários, como a tradução polimórfica de tipos (`getFriendlyTypeName`).
+4.  **Polimorfismo**: Processamento de coleções heterogêneas (`List<Financing>`), onde o comportamento de cálculo mensal e detalhamento é resolvido em tempo de execução.
 
-## 📂 Estrutura do Projeto
-- `main`: Orquestração do fluxo, geração de lotes e tratamento de erros globais.
-- `modelo`: Entidades de negócio (`House`, `Apartment`, `Land`).
-- `modelo.excecao`: Definição de exceções personalizadas de negócio.
-- `util`: Gerenciamento de interface e validação de dados de entrada.
-
-## Como Executar e Testar
+## Estrutura do Projeto
+- `main`: Orquestração do fluxo, persistência e controle de simulação.
+- `modelo`: Classes de domínio e entidades financeiras.
+- `modelo.excecao`: Exceções personalizadas para regras de negócio.
+- `util`: Motores de persistência (`FileUtils`) e interface de usuário (`UserInterface`).
+- `outputs`: Pasta gerada automaticamente para armazenamento dos arquivos de histórico.
 
 ### Pré-requisitos
 - **Java JDK 19** ou superior instalado.
@@ -50,4 +51,4 @@ A arquitetura do projeto demonstra o domínio dos pilares da POO aplicados ao co
 ---
 **Projeto desenvolvido para fins acadêmicos - PUCPR - Big Data e Inteligência Analítica.**
 
-***Desenvolvido por Thiago Ribeiro Rosa (T-Analitycs).***
+***Desenvolvido por Thiago Ribeiro Rosa (T-Analytics).***

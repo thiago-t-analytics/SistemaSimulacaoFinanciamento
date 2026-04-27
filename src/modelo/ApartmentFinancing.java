@@ -1,10 +1,14 @@
 package modelo;
 
+import java.io.Serial;
+
 public class ApartmentFinancing extends Financing {
+    @Serial
+    private static final long serialVersionUID = 1L;
     private final int floor;
     private final double area;
 
-    public ApartmentFinancing(double value, int term, double rate, int floor, double area, double v) {
+    public ApartmentFinancing(double value, int term, double rate, int floor, double area) {
         super(value, term, rate);
         this.floor = floor;
         this.area = area;
@@ -21,5 +25,10 @@ public class ApartmentFinancing extends Financing {
     @Override
     public String getSpecificDetails() {
         return String.format("APTO: %.2fm² e %dº andar", area, floor);
+    }
+
+    @Override
+    public String toString() {
+        return super.toString() + String.format(" | Andar: %2d | Área Privativa: %.2fm²", floor, area);
     }
 }

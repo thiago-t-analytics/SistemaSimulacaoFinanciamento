@@ -1,5 +1,6 @@
 package util;
 
+import javax.swing.JOptionPane;
 import java.util.Scanner;
 import java.util.Locale;
 
@@ -12,7 +13,7 @@ public class UserInterface {
     public static final double RATE_LAND = 11.0;
 
     public UserInterface() {
-        // Inicialização do Scanner
+        // Inicialização
         this.scanner = new Scanner(System.in).useLocale(Locale.US);
     }
 
@@ -21,10 +22,7 @@ public class UserInterface {
         System.out.println("   SISTEMA DE SIMULAÇÃO DE FINANCIAMENTOS");
         System.out.println("=========================================================");
         System.out.println("Escolha o tipo de imóvel para simular:");
-        System.out.println("(1) Casa");
-        System.out.println("(2) Apartamento");
-        System.out.println("(3) Terreno");
-        System.out.println("(4) Misto (Vários tipos)");
+        System.out.println("(1) Casa\n(2) Apartamento\n(3) Terreno\n(4) Misto (Vários tipos)");
         return (int) readDoubleWithRetry("Opção: ");
     }
 
@@ -58,8 +56,12 @@ public class UserInterface {
         return resp.startsWith("S");
     }
 
-    // Realizar a leitura dos valores com tratamento de erros
-    // Implementar 'Try-Catch' hierarquico para garantir a resiliência do sistema
+
+    // Exibir uma mensagem gráfica para o usuario
+    public void showMessage(String msg) {
+        JOptionPane.showMessageDialog(null, msg, "Sistema T-Analytics", JOptionPane.INFORMATION_MESSAGE);
+    }
+
     private double readDoubleWithRetry(String prompt) {
         while (true) {
             try {
@@ -70,29 +72,23 @@ public class UserInterface {
                 
                 double value = Double.parseDouble(input);
                 
-                // Validação de negócio: Não permite valores negativos
+                // Não permite valores negativos
                 if (value < 0) {
                     throw new IllegalArgumentException("Valores negativos não são permitidos no sistema financeiro.");
                 }
-                
                 return value;
-                
             } catch (NumberFormatException e) {
                 System.err.println("ERRO: Formato de número inválido. Use apenas números, '.' ou ','.");
             } catch (IllegalArgumentException e) {
                 System.err.println("ERRO DE NEGÓCIO: " + e.getMessage());
             } catch (Exception e) {
-                // Captura de segurança para erros inesperados
                 System.err.println("ERRO CRÍTICO: " + e.getMessage());
                 e.printStackTrace(); 
             }
         }
     }
-
-     // Fechar o recurso do scanner para evitar vazamento de memoria
+     // Fechar o recurso para evitar vazamento de memoria
     public void closeScanner() {
-        if (this.scanner != null) {
-            this.scanner.close();
-        }
+        if (this.scanner != null) this.scanner.close();
     }
 }
