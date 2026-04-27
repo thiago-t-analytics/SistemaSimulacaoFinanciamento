@@ -12,6 +12,7 @@ public class UserInterface {
     public static final double RATE_LAND = 11.0;
 
     public UserInterface() {
+        // Inicialização do Scanner
         this.scanner = new Scanner(System.in).useLocale(Locale.US);
     }
 
@@ -57,16 +58,41 @@ public class UserInterface {
         return resp.startsWith("S");
     }
 
+    // Realizar a leitura dos valores com tratamento de erros
+    // Implementar 'Try-Catch' hierarquico para garantir a resiliência do sistema
     private double readDoubleWithRetry(String prompt) {
         while (true) {
             try {
-                System.out.print(prompt);
+                if (!prompt.isEmpty()) System.out.print(prompt);
                 String input = scanner.nextLine().trim().replace(",", ".");
+                
                 if (input.isEmpty()) return 0;
-                return Double.parseDouble(input);
+                
+                double value = Double.parseDouble(input);
+                
+                // Validação de negócio: Não permite valores negativos
+                if (value < 0) {
+                    throw new IllegalArgumentException("Valores negativos não são permitidos no sistema financeiro.");
+                }
+                
+                return value;
+                
             } catch (NumberFormatException e) {
-                System.out.println("Erro: Entrada inválida. Digite apenas números.");
+                System.err.println("ERRO: Formato de número inválido. Use apenas números, '.' ou ','.");
+            } catch (IllegalArgumentException e) {
+                System.err.println("ERRO DE NEGÓCIO: " + e.getMessage());
+            } catch (Exception e) {
+                // Captura de segurança para erros inesperados
+                System.err.println("ERRO CRÍTICO: " + e.getMessage());
+                e.printStackTrace(); 
             }
+        }
+    }
+
+     // Fechar o recurso do scanner para evitar vazamento de memoria
+    public void closeScanner() {
+        if (this.scanner != null) {
+            this.scanner.close();
         }
     }
 }

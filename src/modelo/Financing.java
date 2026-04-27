@@ -2,7 +2,6 @@ package modelo;
 
 import java.io.Serializable;
 
-// Utilizar abstract para definir que esta classe não pode ser instanciada diretamente
 public abstract class Financing implements Serializable {
     protected double propertyValue;
     protected int financingTermYears;
@@ -21,15 +20,24 @@ public abstract class Financing implements Serializable {
         return this.calculateMonthlyPayment() * this.financingTermYears * 12;
     }
 
+    // Retornar o nome da classe em portugues
+    public String getFriendlyTypeName() {
+        return switch (this.getClass().getSimpleName()) {
+            case "HouseFinancing" -> "Casa";
+            case "ApartmentFinancing" -> "Apartamento";
+            case "LandFinancing" -> "Terreno";
+            default -> "Financiamento";
+        };
+    }
+
     public double getPropertyValue() { return propertyValue; }
     public int getFinancingTermYears() { return financingTermYears; }
     public double getAnnualInterestRate() { return annualInterestRate; }
 
-    // Metodo para que cada imovel descreva suas particularidades
+    // Metodo para que cada imovel descreva a suas particularidades
     public abstract String getSpecificDetails();
+
     public int getTermInMonths() {
         return this.financingTermYears * 12;
     }
-
-
 }

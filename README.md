@@ -4,32 +4,30 @@ Este projeto é uma aplicação Java desenvolvida para a disciplina de **Fundame
 
 O objetivo é simular múltiplos financiamentos, gerenciando coleções de objetos na memória e aplicando regras de negócio realistas do mercado financeiro, utilizando técnicas avançadas de manipulação de dados e estruturação de software.
 
-## Funcionalidades e Refinamentos
+## Novas Funcionalidades e Resiliência
 
-O sistema foi projetado para oferecer uma experiência de simulação completa e dinâmica:
+O sistema foi aprimorado para garantir robustez técnica e conformidade com regras de negócio:
 
-- **Seleção de Perfil**: Escolha entre Casa, Apartamento, Terreno ou um **Perfil Misto** (gera uma carteira diversificada automaticamente).
-- **Entrada de Dados Inteligente**: O sistema sugere taxas anuais baseadas no tipo de imóvel (Casa: 9.5%, Apto: 10.5%, Terreno: 11.0%).
-- **Lógica de Localização (Data Analytics)**: Para Terrenos, o sistema permite definir a zona ou gera uma distribuição estatística (3 Urbanos e 2 Rurais) caso o usuário opte pelo preenchimento automático.
-- **Resumo Expandido**: Relatório consolidado exibindo o **Custo Efetivo Total** (Capital + Juros) e detalhes específicos de cada ativo.
-- **Ciclo de Simulação Contínuo**: Implementação de um loop de execução que permite múltiplas rodadas de análise sem reiniciar o programa.
+- **Tratamento de Exceções Hierárquico**: Implementação de `try-catch` robusto com captura de `IllegalArgumentException` para entradas negativas e `NumberFormatException` para formatos inválidos.
+- **Lógica de Compliance (Exceção Verificada)**: Criação da exceção personalizada `AumentoMaiorDoQueJurosException`. Caso o acréscimo de seguro da Casa exceda 50% dos juros, o sistema atua como um "Gerente Virtual" e ajusta o valor automaticamente para garantir a viabilidade do contrato.
+- **Gerenciamento de Recursos**: Uso de métodos de fechamento de recursos (`scanner.close()`) para evitar vazamentos de memória.
+- **Interface Polimórfica**: Centralização das traduções e nomes amigáveis dentro da superclasse `Financing`, eliminando redundâncias no código principal.
+- **Motor Analítico em Lote**: Geração automatizada de portfólios variados com variações de mercado de ±10% nos valores dos imóveis.
 
 ## Fundamentação Acadêmica e Lógica do Projeto
 
 A arquitetura do projeto demonstra o domínio dos pilares da POO aplicados ao contexto de análise de dados:
 
-1.  **Abstração e Herança**: A classe `Financing` é abstrata, definindo o contrato base para todos os modelos de negócio. As subclasses (`HouseFinancing`, `ApartmentFinancing`, `LandFinancing`) herdam e especializam esses comportamentos.
-2.  **Encapsulamento**: Proteção da integridade dos dados financeiros através de modificadores de acesso e isolamento da lógica de IO na classe `UserInterface`.
-3.  **Polimorfismo**: Processamento dinâmico de uma `List<Financing>`. O sistema invoca os métodos `calculateMonthlyPayment()` e `getSpecificDetails()` de forma polimórfica, executando a implementação correta para cada tipo de imóvel em tempo de execução.
-4.  **Regras de Negócio Diferenciadas**:
-    *   **Casas**: Taxa de seguro fixa inclusa na parcela.
-    *   **Apartamentos**: Cálculo baseado em juros compostos para refletir financiamentos de longo prazo.
-    *   **Terrenos**: Acréscimo de risco de 2% sobre o valor da parcela.
+1.  **Abstração e Herança**: Uso de superclasse abstrata `Financing` para padronizar o comportamento de diversos ativos imobiliários.
+2.  **Encapsulamento**: Atributos protegidos e centralização de lógica de tradução (`getFriendlyTypeName`) e validação.
+3.  **Polimorfismo**: Chamada dinâmica de métodos de cálculo e descrição, onde cada objeto responde de acordo com sua especialização em tempo de execução.
+4.  **Tratamento de Erros e Exceções**: Diferenciação entre exceções de runtime (erros de input) e exceções de negócio (violação de regras de financiamento).
 
-## Estrutura do Projeto
-- `main`: Orquestração do fluxo e controle de loops.
-- `modelo`: Entidades de negócio e algoritmos de cálculo financeiro.
-- `util`: Utilitários para interação com o usuário e tratamento de erros.
+## 📂 Estrutura do Projeto
+- `main`: Orquestração do fluxo, geração de lotes e tratamento de erros globais.
+- `modelo`: Entidades de negócio (`House`, `Apartment`, `Land`).
+- `modelo.excecao`: Definição de exceções personalizadas de negócio.
+- `util`: Gerenciamento de interface e validação de dados de entrada.
 
 ## Como Executar e Testar
 
@@ -41,7 +39,7 @@ A arquitetura do projeto demonstra o domínio dos pilares da POO aplicados ao co
 1.  **Clonar/Baixar**: Certifique-se de que os arquivos estão na estrutura de pastas correta (`src/main`, `src/modelo`, `src/util`).
 2.  **Compilar**:
     ```bash
-    javac src/main/Main.java src/modelo/*.java src/util/*.java -d out
+    javac src/main/Main.java src/modelo/*.java src/modelo/excecao/*.java src/util/*.java -d out
     ```
 3.  **Executar**:
     ```bash
